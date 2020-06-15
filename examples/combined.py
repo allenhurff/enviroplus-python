@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 import time
 import colorsys
@@ -12,7 +13,7 @@ except ImportError:
     import ltr559
 
 from bme280 import BME280
-from pms5003 import PMS5003, ReadTimeoutError as pmsReadTimeoutError
+# from pms5003 import PMS5003, ReadTimeoutError as pmsReadTimeoutError
 from enviroplus import gas
 from subprocess import PIPE, Popen
 from PIL import Image
@@ -35,8 +36,8 @@ Press Ctrl+C to exit!
 # BME280 temperature/pressure/humidity sensor
 bme280 = BME280()
 
-# PMS5003 particulate sensor
-pms5003 = PMS5003()
+# # PMS5003 particulate sensor
+# pms5003 = PMS5003()
 time.sleep(1.0)
 
 # Create ST7735 LCD display class
@@ -137,7 +138,12 @@ def display_text(variable, data, unit):
     colours = [(v - vmin + 1) / (vmax - vmin + 1) for v in values[variable]]
     # Format the variable name and value
     message = "{}: {:.1f} {}".format(variable[:4], data, unit)
-    logging.info(message)
+    logging.info("variable")
+    logging.info(variable)
+    logging.info("variable")
+    logging.info(values[variable])
+    # logging.info(message)
+    logging.info('\n')
     draw.rectangle((0, 0, WIDTH, HEIGHT), (255, 255, 255))
     for i in range(len(colours)):
         # Convert the values to colours from red to blue
@@ -161,6 +167,8 @@ def save_data(idx, data):
     unit = units[idx]
     message = "{}: {:.1f} {}".format(variable[:4], data, unit)
     logging.info(message)
+    if variable == 'nh3':
+        logging.info('\n')
 
 
 # Displays all the text on the 0.96" LCD
@@ -328,16 +336,16 @@ def main():
                 save_data(5, gas_data.reducing / 1000)
                 save_data(6, gas_data.nh3 / 1000)
                 display_everything()
-                pms_data = None
-                try:
-                    pms_data = pms5003.read()
-                except pmsReadTimeoutError:
-                    logging.warn("Failed to read PMS5003")
-                else:
-                    save_data(7, float(pms_data.pm_ug_per_m3(1.0)))
-                    save_data(8, float(pms_data.pm_ug_per_m3(2.5)))
-                    save_data(9, float(pms_data.pm_ug_per_m3(10)))
-                    display_everything()
+                # pms_data = None
+                # try:
+                #     pms_data = pms5003.read()
+                # except pmsReadTimeoutError:
+                #     logging.warn("Failed to read PMS5003")
+                # else:
+                #     save_data(7, float(pms_data.pm_ug_per_m3(1.0)))
+                #     save_data(8, float(pms_data.pm_ug_per_m3(2.5)))
+                #     save_data(9, float(pms_data.pm_ug_per_m3(10)))
+                #     display_everything()
 
     # Exit cleanly
     except KeyboardInterrupt:
