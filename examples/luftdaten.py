@@ -28,16 +28,7 @@ Press Ctrl+C to exit!
 
 """)
 
-# TEST ALL Logging Genres
-# 'application' code
-# logger.debug('debug message')
-# logger.info('info message')
-# logger.warning('warn message')
-# logger.error('error message')
-# logger.critical('critical message')
 
-#   END SECTION :: LOGGER HEAD LOGGING SETUP
-# END SECTION ::: LOGGER HEAD LOGGING SETUP
 
 bus = SMBus(1)
 
@@ -58,7 +49,7 @@ disp = ST7735.ST7735(
 disp.begin()
 
 # Create PMS5003 instance
-# pms5003 = PMS5003()
+pms5003 = PMS5003()
 
 
 # Read values from BME280 and PMS5003 and return as dict
@@ -70,16 +61,16 @@ def read_values():
     values["temperature"] = "{:.2f}".format(comp_temp)
     values["pressure"] = "{:.2f}".format(bme280.get_pressure() * 100)
     values["humidity"] = "{:.2f}".format(bme280.get_humidity())
-    # try:
-    #     pm_values = pms5003.read()
-    #     values["P2"] = str(pm_values.pm_ug_per_m3(2.5))
-    #     values["P1"] = str(pm_values.pm_ug_per_m3(10))
-    # except ReadTimeoutError:
-    #     pms5003.reset()
-    #     pm_values = pms5003.read()
-    #     values["P2"] = str(pm_values.pm_ug_per_m3(2.5))
-    #     values["P1"] = str(pm_values.pm_ug_per_m3(10))
-    # return values
+    try:
+        pm_values = pms5003.read()
+        values["P2"] = str(pm_values.pm_ug_per_m3(2.5))
+        values["P1"] = str(pm_values.pm_ug_per_m3(10))
+    except ReadTimeoutError:
+        pms5003.reset()
+        pm_values = pms5003.read()
+        values["P2"] = str(pm_values.pm_ug_per_m3(2.5))
+        values["P1"] = str(pm_values.pm_ug_per_m3(10))
+    return values
 
 
 # Get CPU temperature to use for compensation
@@ -123,25 +114,25 @@ def display_status():
 
 
 def send_to_luftdaten(values, id):
-    # pm_values = dict(i for i in values.items() if i[0].startswith("P"))
+    pm_values = dict(i for i in values.items() if i[0].startswith("P"))
     temp_values = dict(i for i in values.items() if not i[0].startswith("P"))
 
     # pm_values_json = [{"value_type": key, "value": val} for key, val in pm_values.items()]
     temp_values_json = [{"value_type": key, "value": val} for key, val in temp_values.items()]
 
-    # resp_1 = requests.post(
-    #     "https://api.luftdaten.info/v1/push-sensor-data/",
-    #     json={
-    #         "software_version": "enviro-plus 0.0.1",
-    #         "sensordatavalues": pm_values_json
-    #     },
-    #     headers={
-    #         "X-PIN": "1",
-    #         "X-Sensor": id,
-    #         "Content-Type": "application/json",
-    #         "cache-control": "no-cache"
-    #     }
-    # )
+    resp_1 = requests.post(
+        "https://api.luftdaten.info/v1/push-sensor-data/",
+        json={
+            "software_version": "enviro-plus 0.0.1",
+            "sensordatavalues": pm_values_json
+        },
+        headers={
+            "X-PIN": "1",
+            "X-Sensor": id,
+            "Content-Type": "application/json",
+            "cache-control": "no-cache"
+        }
+    )
 
     resp_1 = requests.post(
         "https://api.luftdaten.info/v1/push-sensor-data/",
